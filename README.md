@@ -1,4 +1,4 @@
-# PeerProgramming-M2S2
+# PeerProgramming-M3S2
 
 ## Setup
 
