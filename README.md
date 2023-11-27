@@ -37,3 +37,31 @@ If you make changes to the database schema, you will need to update the types. Y
 ```bash
 npm run generate-types
 ```
+
+## Schema
+
+### Movies
+
+    id: integer
+    title: text
+    year: numeric
+
+### Screenings
+
+    id: integer
+    movie_id: integer
+    screening_time: datetime
+    total_tickets: integer
+    tickets_left: integer
+
+### Tickets
+
+    id: integer
+    screening_id: integer
+    user_id: integer
+    booking_time: datetime
+
+### Users
+
+    id: integer
+    name: text
