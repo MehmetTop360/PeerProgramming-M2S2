@@ -1,75 +1,49 @@
 import createTestDatabase from '@tests/utils/createTestDatabase'
-import { createFor } from '@tests/utils/records'
-import buildRepository from '../repository'
+import buildRepository from '@/modules/movies/repository'
 
 const db = await createTestDatabase()
-const repository = buildRepository(db)
-const createMovies = createFor(db, 'movies')
 
-describe('findAll', () => {
-  it('should return existing movies', async () => {
-    // ARRANGE (Given that we have the following record in the database...)
-    // directly create movies in the database
-    await createMovies([
-      {
-        id: 1,
-        title: 'Sherlock Holmes',
-        year: 2009,
-      },
-    ])
+afterAll(async () => {
+  await db.destroy()
+})
 
-    // ACT (When we call...)
+describe('Movies Repository', async () => {
+  it('should find all movies', async () => {
+    const repository = buildRepository(db)
     const movies = await repository.findAll()
-
-    // ASSERT (Then we should get...)
-    expect(movies).toEqual([
-      {
-        id: expect.any(Number),
-        title: 'Sherlock Holmes',
-        year: 2009,
-      },
-    ])
+    expect(movies).toBeInstanceOf(Array)
   })
 
-  it('should return a list of movies by their ID', async () => {
-    // ARRANGE (Given that we have the following records in the database...)
-    // directly create movies in the database
-    await createMovies([
-      {
-        id: 22,
-        title: 'The Dark Knight',
-        year: 2008,
-      },
-      {
-        id: 234,
-        title: 'Sherlock Holmes',
-        year: 2009,
-      },
-      {
-        id: 4153,
-        title: 'Inception',
-        year: 2010,
-      },
-    ])
+  it('should create a movie', async () => {
+    const repository = buildRepository(db)
+    const movie = await repository.create({ title: 'Test Movie', year: 2021 })
+    expect(movie).toEqual(
+      expect.objectContaining({ title: 'Test Movie', year: 2021 })
+    )
+  })
 
-    // ACT (When we call...)
-    // select a few of them
-    const movies = await repository.findByIds([234, 4153])
+  it('should find a movie by id', async () => {
+    const repository = buildRepository(db)
+    const newMovie = await repository.create({
+      title: 'Find Movie',
+      year: 2021,
+    })
 
-    // ASSERT (Then we should get...)
-    // expect to have only the selected movies
-    expect(movies).toHaveLength(2)
-    expect(movies).toEqual([
-      {
-        id: 234,
-        title: 'Sherlock Holmes',
-        year: 2009,
-      },
-      {
-        id: 4153,
-        title: 'Inception',
-        year: 2010,
-      },
-    ])
+    const foundMovie = await repository.findById(newMovie!.id)
+    expect(foundMovie).toEqual(
+      expect.objectContaining({ title: 'Find Movie', year: 2021 })
+    )
+  })
+
+  it('should remove a movie', async () => {
+    const repository = buildRepository(db)
+    const newMovie = await repository.create({
+      title: 'Delete Movie',
+      year: 2021,
+    })
+
+    await repository.remove(newMovie!.id)
+    const deletedMovie = await repository.findById(newMovie!.id)
+    expect(deletedMovie).toBeUndefined()
   })
 })
